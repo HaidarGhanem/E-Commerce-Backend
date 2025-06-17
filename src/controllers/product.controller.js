@@ -1,49 +1,62 @@
-const Product = require('../db/mongo/models/Products')
+const {ProductService} = require('../services/product.service')
 
-const createProduct = async ( name , price , category , stock ) => {
+const createProduct = async (req,res) => {
     try {
-        const newProduct = Product.create(name , price , category , stock)
-        await newProduct.save()
-        return (newProduct)
+        const {name , price , category , stock} = req.body
+        const newProduct = ProductService.create({name , price , category , stock})
+        res.status(201).json(newProduct)
     } catch (error) {
-        console.log({message: 'error creating product' , error: error.message})
+        res.status(500).json({message: 'error creating product' , error: error.message})
     }
 }
 
-const readOneProduct = async ( productname ) => {
+const readOneProduct = async (req,res) => {
     try {
-        const product = await Product.findOne({name : productname})
-        return (product)
+        const productname = req.body
+        const product = await ProductService.findByName(productname)
+        res.status(200).json(product)
     } catch (error) {
-        console.log({message: 'error reading product' , error: error.message})
+        res.status(500).json({message: 'error reading product - by: Name' , error: error.message})
     }
 }
 
-const readAllProduct = async () => {
+const readByCategory = async (req,res) => {
     try {
-        const products = await Product.find({name : productname})
-        return (products)
+        const category = req.body
+        const products = await ProductService.findByCategory(category)
+        res.status(200).json(products)
     } catch (error) {
-        console.log({message: 'error reading products' , error: error.message})
+        res.status(500).json({message: 'error reading products - by: Category' , error: error.message})
     }
 }
 
-const editProduct = async ( productname , edits ) => {
+const readAllProduct = async (req,res) => {
     try {
-        const product = await Product.findOneAndUpdate({name : productname} , edits , {new: true})
-        return (product)
+        const products = await ProductService.findAll()
+        res.status(200).json(products)
     } catch (error) {
-        console.log({message: 'error editing product' , error: error.message})
+        res.status(500).json({message: 'error reading all products' , error: error.message})
     }
 }
 
-const deleteProduct = async ( productname ) => {
+const editProduct = async (req,res) => {
     try {
-        await Product.findOneAndDelete({name: productname})
-        return (`${productname} deleted successfully`)
+        const { productName , newData } = req.body
+        const product = await ProductService.update(productName, newData)
+        res.status(201).json(product)
     } catch (error) {
-        console.log({message: 'error deleting product' , error: error.message})
+        res.status(500).json({message: 'error editing product' , error: error.message})
     }
 }
 
-module.exports = { createProduct , readOneProduct , readAllProduct , editProduct , deleteProduct }
+const deleteProduct = async (req,res) => {
+    try {
+        const {productname} = req.body
+        await ProductService.delete(productname)
+        res.status(200).json({message: `${productname} deleted successfully`})
+    } catch (error) {
+        res.status(500).json({message: 'error deleting product' , error: error.message})
+    }
+}
+
+module.exports = { createProduct , readOneProduct , readByCategory , readAllProduct , editProduct , deleteProduct }

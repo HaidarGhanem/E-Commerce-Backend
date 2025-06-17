@@ -13,6 +13,9 @@ const server = express()
 server.use(cors())
 server.use(bodyParser.json())
 
+server.use('/api/auth' , require('./src/routes/auth.route'))
+server.use('/api/product' , require('./src/routes/product.route'))
+
 (async () => {
     await connectMongo.connect()
     await sequelize.sync()
